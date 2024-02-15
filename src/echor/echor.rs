@@ -18,3 +18,18 @@ fn main() {
         if args.omit_newline { "" } else { "\n" }
     );
 }
+
+#[cfg(test)]
+mod tests {
+    use assert_cmd::Command;
+    use predicates::prelude::predicate;
+
+    #[test]
+    fn run_echor() {
+        let mut cmd = Command::cargo_bin("echor").unwrap();
+        cmd.arg("hello")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("hello"));
+    }
+}
