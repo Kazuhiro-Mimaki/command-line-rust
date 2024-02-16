@@ -7,6 +7,10 @@ edition = "2021"
 name = "echor"
 path = "src/echor/echor.rs"
 
+[[bin]]
+name = "catr"
+path = "src/catr/catr.rs"
+
 [dependencies]
 assert_cmd = "2.0.13"
 clap = { version = "4.5.0", features = ["derive"] }
