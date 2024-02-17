@@ -9,19 +9,31 @@ struct Cli {
 
     #[arg(short = 'n', help = "Count lines", default_value = "10", value_parser = clap::value_parser!(u32))]
     count: u32,
+
+    #[arg(short = 'c', help = "Bytes")]
+    bytes: Option<u32>,
 }
 
 fn main() {
     let args = Cli::parse();
 
     match fs::read_to_string(&args.path) {
-        Ok(content) => {
-            for (i, line) in content.lines().enumerate() {
-                if i < args.count as usize {
-                    println!("{}", line);
+        Ok(content) => match args.bytes {
+            Some(bytes) => {
+                for (i, byte) in content.bytes().enumerate() {
+                    if i < bytes as usize {
+                        print!("{}", byte as char);
+                    }
                 }
             }
-        }
+            None => {
+                for (i, line) in content.lines().enumerate() {
+                    if i < args.count as usize {
+                        println!("{}", line);
+                    }
+                }
+            }
+        },
         Err(e) => panic!("There was a problem opening the file: {:?}", e),
     }
 }
@@ -78,5 +90,14 @@ mod tests {
             .assert()
             .success()
             .stdout("one\ntwo\nthree\nfour\nfive\n");
+    }
+
+    #[test]
+    fn run_with_bytes() {
+        let mut cmd = Command::cargo_bin("headr").unwrap();
+        cmd.args(["-c", "10", "src/headr/inputs/default.txt"])
+            .assert()
+            .success()
+            .stdout("one\ntwo\nth");
     }
 }
