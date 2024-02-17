@@ -11,6 +11,10 @@ path = "src/echor/echor.rs"
 name = "catr"
 path = "src/catr/catr.rs"
 
+[[bin]]
+name = "headr"
+path = "src/headr/headr.rs"
+
 [dependencies]
 assert_cmd = "2.0.13"
 clap = { version = "4.5.0", features = ["derive"] }
