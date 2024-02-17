@@ -1,4 +1,4 @@
-use std::{fs, path::PathBuf};
+use std::{error::Error, fs, path::PathBuf};
 
 use clap::Parser;
 
@@ -7,11 +7,11 @@ struct Cli {
     #[arg(value_name = "PATH", help = "filepath to read from")]
     path: PathBuf,
 
-    #[arg(short = 'n', help = "Count lines", default_value = "10", value_parser = clap::value_parser!(u32))]
-    count: u32,
+    #[arg(short = 'n', help = "Count lines", default_value = "10")]
+    count: String,
 
     #[arg(short = 'c', help = "Bytes")]
-    bytes: Option<u32>,
+    bytes: Option<String>,
 }
 
 fn main() {
@@ -19,22 +19,39 @@ fn main() {
 
     match fs::read_to_string(&args.path) {
         Ok(content) => match args.bytes {
-            Some(bytes) => {
-                for (i, byte) in content.bytes().enumerate() {
-                    if i < bytes as usize {
-                        print!("{}", byte as char);
+            Some(bytes) => match parse_positive_int(bytes) {
+                Ok(count) => {
+                    for (i, byte) in content.bytes().enumerate() {
+                        if i < count as usize {
+                            println!("{}", byte);
+                        }
                     }
                 }
-            }
-            None => {
-                for (i, line) in content.lines().enumerate() {
-                    if i < args.count as usize {
-                        println!("{}", line);
+                Err(err) => {
+                    println!("headr: illegal line count -- {}", err);
+                }
+            },
+            None => match parse_positive_int(args.count) {
+                Ok(count) => {
+                    for (i, line) in content.lines().enumerate() {
+                        if i < count as usize {
+                            println!("{}", line);
+                        }
                     }
                 }
-            }
+                Err(err) => {
+                    println!("headr: illegal line count -- {}", err);
+                }
+            },
         },
         Err(e) => panic!("There was a problem opening the file: {:?}", e),
+    }
+}
+
+fn parse_positive_int(val: String) -> Result<i32, Box<dyn Error>> {
+    match val.parse::<i32>() {
+        Ok(n) if n > 0 => Ok(n),
+        _ => Err(From::from(val)),
     }
 }
 
