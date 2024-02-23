@@ -6,6 +6,15 @@ use clap::Parser;
 struct Cli {
     #[arg(value_name = "PATH", help = "filepath to read from")]
     path: PathBuf,
+
+    #[arg(short = 'l', help = "Number of lines")]
+    show_line_count: bool,
+
+    #[arg(short = 'w', help = "Number of words")]
+    show_word_count: bool,
+
+    #[arg(short = 'c', help = "Number of bytes")]
+    show_byte_count: bool,
 }
 
 fn main() {
@@ -14,10 +23,26 @@ fn main() {
     match fs::read_to_string(&args.path) {
         Ok(content) => {
             let (line_count, word_count, byte_count) = get_file_counts(content);
-            println!(
-                "{} {} {} {:?}",
-                line_count, word_count, byte_count, args.path
-            );
+            let mut count_vec = Vec::<String>::new();
+            if args.show_line_count {
+                count_vec.push(line_count.to_string());
+            }
+            if args.show_word_count {
+                count_vec.push(word_count.to_string());
+            }
+            if args.show_byte_count {
+                count_vec.push(byte_count.to_string());
+            }
+            if count_vec.len() == 0 {
+                count_vec.extend(vec![
+                    line_count.to_string(),
+                    word_count.to_string(),
+                    byte_count.to_string(),
+                ]);
+            }
+
+            let joined = count_vec.join(" ");
+            println!("{} {:?}", joined, args.path);
         }
         Err(e) => panic!("There was a problem opening the file: {:?}", e),
     }
