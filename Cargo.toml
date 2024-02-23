@@ -15,6 +15,10 @@ path = "src/catr/catr.rs"
 name = "headr"
 path = "src/headr/headr.rs"
 
+[[bin]]
+name = "wcr"
+path = "src/wcr/wcr.rs"
+
 [dependencies]
 assert_cmd = "2.0.13"
 clap = { version = "4.5.0", features = ["derive"] }
