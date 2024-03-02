@@ -19,6 +19,10 @@ path = "src/headr/headr.rs"
 name = "wcr"
 path = "src/wcr/wcr.rs"
 
+[[bin]]
+name = "uniqr"
+path = "src/uniqr/uniqr.rs"
+
 [dependencies]
 assert_cmd = "2.0.13"
 clap = { version = "4.5.0", features = ["derive"] }
