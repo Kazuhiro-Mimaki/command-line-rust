@@ -1,0 +1,16 @@
+src/findr/inputs
+src/findr/inputs/g.csv
+src/findr/inputs/a
+src/findr/inputs/a/a.txt
+src/findr/inputs/a/b
+src/findr/inputs/a/b/b.csv
+src/findr/inputs/a/b/c
+src/findr/inputs/a/b/c/c.mp3
+src/findr/inputs/f
+src/findr/inputs/f/f.txt
+src/findr/inputs/d
+src/findr/inputs/d/b.csv
+src/findr/inputs/d/d.txt
+src/findr/inputs/d/d.tsv
+src/findr/inputs/d/e
+src/findr/inputs/d/e/e.mp3

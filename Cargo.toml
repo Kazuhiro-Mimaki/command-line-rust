@@ -23,7 +23,12 @@ path = "src/wcr/wcr.rs"
 name = "uniqr"
 path = "src/uniqr/uniqr.rs"
 
+[[bin]]
+name = "findr"
+path = "src/findr/findr.rs"
+
 [dependencies]
 assert_cmd = "2.0.13"
 clap = { version = "4.5.0", features = ["derive"] }
 predicates = "3.1.0"
+walkdir = "2"
