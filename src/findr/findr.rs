@@ -1,5 +1,6 @@
 use clap::builder::PossibleValue;
 use clap::{Parser, ValueEnum};
+use regex::Regex;
 use std::path::PathBuf;
 use walkdir::WalkDir;
 
@@ -29,12 +30,21 @@ struct Cli {
     #[arg(value_name = "PATH", help = "filepath to read from")]
     file: PathBuf,
 
+    #[arg(short = 'n', long = "name", value_name = "NAME")]
+    names: Vec<String>,
+
     #[arg(short = 't', long = "type", value_name = "TYPE")]
     entry_types: Vec<EntryType>,
 }
 
 fn main() {
     let args = Cli::parse();
+
+    let names = args
+        .names
+        .iter()
+        .map(|name| Regex::new(name).unwrap())
+        .collect::<Vec<_>>();
 
     for entry in WalkDir::new(args.file) {
         match entry {
@@ -47,7 +57,11 @@ fn main() {
                             EntryType::Dir => entry.file_type().is_dir(),
                             EntryType::File => entry.file_type().is_file(),
                             EntryType::Link => entry.file_type().is_symlink(),
-                        } {
+                        } && (names.is_empty()
+                            || names
+                                .iter()
+                                .any(|re| re.is_match(&entry.file_name().to_string_lossy())))
+                        {
                             println!("{}", entry.path().display());
                         }
                     }
