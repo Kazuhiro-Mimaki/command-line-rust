@@ -28,7 +28,7 @@ impl ValueEnum for EntryType {
 #[derive(Parser, Debug)]
 struct Cli {
     #[arg(value_name = "PATH", help = "filepath to read from")]
-    file: PathBuf,
+    files: Vec<PathBuf>,
 
     #[arg(short = 'n', long = "name", value_name = "NAME")]
     names: Vec<String>,
@@ -46,24 +46,26 @@ fn main() {
         .map(|name| Regex::new(name).unwrap())
         .collect::<Vec<_>>();
 
-    for entry in WalkDir::new(args.file) {
-        match entry {
-            Ok(entry) => {
-                if (args.entry_types.is_empty()
-                    || args.entry_types.iter().any(|entry_type| match entry_type {
-                        EntryType::Dir => entry.file_type().is_dir(),
-                        EntryType::File => entry.file_type().is_file(),
-                        EntryType::Link => entry.file_type().is_symlink(),
-                    }))
-                    && (names.is_empty()
-                        || names
-                            .iter()
-                            .any(|re| re.is_match(&entry.file_name().to_string_lossy())))
-                {
-                    println!("{}", entry.path().display());
+    for file in args.files {
+        for entry in WalkDir::new(file) {
+            match entry {
+                Ok(entry) => {
+                    if (args.entry_types.is_empty()
+                        || args.entry_types.iter().any(|entry_type| match entry_type {
+                            EntryType::Dir => entry.file_type().is_dir(),
+                            EntryType::File => entry.file_type().is_file(),
+                            EntryType::Link => entry.file_type().is_symlink(),
+                        }))
+                        && (names.is_empty()
+                            || names
+                                .iter()
+                                .any(|re| re.is_match(&entry.file_name().to_string_lossy())))
+                    {
+                        println!("{}", entry.path().display());
+                    }
                 }
+                Err(e) => println!("Error: {}", e),
             }
-            Err(e) => println!("Error: {}", e),
         }
     }
 }
@@ -119,7 +121,7 @@ mod tests {
     }
 
     #[test]
-    fn run_multiple() -> Result<(), Box<dyn Error>> {
+    fn run_multiple_type() -> Result<(), Box<dyn Error>> {
         let expected = fs::read_to_string("src/findr/expects/multiple_type.txt")?;
         Command::cargo_bin("findr")?
             .args(["src/findr/inputs", "-t", "d", "-t", "f"])
@@ -141,10 +143,21 @@ mod tests {
     }
 
     #[test]
-    fn run_multiple_names() -> Result<(), Box<dyn Error>> {
+    fn run_multiple_name() -> Result<(), Box<dyn Error>> {
         let expected = fs::read_to_string("src/findr/expects/multiple_names.txt")?;
         Command::cargo_bin("findr")?
             .args(["src/findr/inputs", "-n", ".*\\.csv", "-n", ".*\\.mp3"])
+            .assert()
+            .success()
+            .stdout(expected);
+        Ok(())
+    }
+
+    #[test]
+    fn run_multiple_input() -> Result<(), Box<dyn Error>> {
+        let expected = fs::read_to_string("src/findr/expects/multiple_inputs.txt")?;
+        Command::cargo_bin("findr")?
+            .args(["src/findr/inputs/a", "src/findr/inputs/d"])
             .assert()
             .success()
             .stdout(expected);
