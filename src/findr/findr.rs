@@ -49,22 +49,18 @@ fn main() {
     for entry in WalkDir::new(args.file) {
         match entry {
             Ok(entry) => {
-                if args.entry_types.is_empty() {
+                if (args.entry_types.is_empty()
+                    || args.entry_types.iter().any(|entry_type| match entry_type {
+                        EntryType::Dir => entry.file_type().is_dir(),
+                        EntryType::File => entry.file_type().is_file(),
+                        EntryType::Link => entry.file_type().is_symlink(),
+                    }))
+                    && (names.is_empty()
+                        || names
+                            .iter()
+                            .any(|re| re.is_match(&entry.file_name().to_string_lossy())))
+                {
                     println!("{}", entry.path().display());
-                } else {
-                    for entry_type in &args.entry_types {
-                        if match entry_type {
-                            EntryType::Dir => entry.file_type().is_dir(),
-                            EntryType::File => entry.file_type().is_file(),
-                            EntryType::Link => entry.file_type().is_symlink(),
-                        } && (names.is_empty()
-                            || names
-                                .iter()
-                                .any(|re| re.is_match(&entry.file_name().to_string_lossy())))
-                        {
-                            println!("{}", entry.path().display());
-                        }
-                    }
                 }
             }
             Err(e) => println!("Error: {}", e),
@@ -79,10 +75,76 @@ mod tests {
     use assert_cmd::Command;
 
     #[test]
-    fn run_dir() -> Result<(), Box<dyn Error>> {
+    fn run() -> Result<(), Box<dyn Error>> {
         let expected = fs::read_to_string("src/findr/expects/default.txt")?;
         Command::cargo_bin("findr")?
             .arg("src/findr/inputs")
+            .assert()
+            .success()
+            .stdout(expected);
+        Ok(())
+    }
+
+    #[test]
+    fn run_dir() -> Result<(), Box<dyn Error>> {
+        let expected = fs::read_to_string("src/findr/expects/dir.txt")?;
+        Command::cargo_bin("findr")?
+            .args(["src/findr/inputs", "-t", "d"])
+            .assert()
+            .success()
+            .stdout(expected);
+        Ok(())
+    }
+
+    #[test]
+    fn run_file() -> Result<(), Box<dyn Error>> {
+        let expected = fs::read_to_string("src/findr/expects/file.txt")?;
+        Command::cargo_bin("findr")?
+            .args(["src/findr/inputs", "-t", "f"])
+            .assert()
+            .success()
+            .stdout(expected);
+        Ok(())
+    }
+
+    #[test]
+    fn run_link() -> Result<(), Box<dyn Error>> {
+        let expected = fs::read_to_string("src/findr/expects/link.txt")?;
+        Command::cargo_bin("findr")?
+            .args(["src/findr/inputs", "-t", "l"])
+            .assert()
+            .success()
+            .stdout(expected);
+        Ok(())
+    }
+
+    #[test]
+    fn run_multiple() -> Result<(), Box<dyn Error>> {
+        let expected = fs::read_to_string("src/findr/expects/multiple_type.txt")?;
+        Command::cargo_bin("findr")?
+            .args(["src/findr/inputs", "-t", "d", "-t", "f"])
+            .assert()
+            .success()
+            .stdout(expected);
+        Ok(())
+    }
+
+    #[test]
+    fn run_names() -> Result<(), Box<dyn Error>> {
+        let expected = fs::read_to_string("src/findr/expects/name.txt")?;
+        Command::cargo_bin("findr")?
+            .args(["src/findr/inputs", "-n", ".*\\.csv"])
+            .assert()
+            .success()
+            .stdout(expected);
+        Ok(())
+    }
+
+    #[test]
+    fn run_multiple_names() -> Result<(), Box<dyn Error>> {
+        let expected = fs::read_to_string("src/findr/expects/multiple_names.txt")?;
+        Command::cargo_bin("findr")?
+            .args(["src/findr/inputs", "-n", ".*\\.csv", "-n", ".*\\.mp3"])
             .assert()
             .success()
             .stdout(expected);

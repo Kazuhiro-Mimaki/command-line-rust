@@ -1,0 +1,7 @@
+src/findr/inputs
+src/findr/inputs/a
+src/findr/inputs/a/b
+src/findr/inputs/a/b/c
+src/findr/inputs/f
+src/findr/inputs/d
+src/findr/inputs/d/e

@@ -1,0 +1,8 @@
+src/findr/inputs/g.csv
+src/findr/inputs/a/a.txt
+src/findr/inputs/a/b/b.csv
+src/findr/inputs/a/b/c/c.mp3
+src/findr/inputs/f/f.txt
+src/findr/inputs/d/d.txt
+src/findr/inputs/d/d.tsv
+src/findr/inputs/d/e/e.mp3
